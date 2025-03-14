@@ -17,6 +17,7 @@ public class RestaurantService : IRestaurantService
     }
     public async Task AddAsync(RestaurantCommandDto dto)
     {
+
         //var sentence = true, sentence = 5 //compile goturur, tip deyismir.
         //object sentence = (bool)sentence - casting - unboxing 
         //dynamic sentence = true, sentence = 5, sentence = "yasil" //runtime, sonuncu deyeri goturur
@@ -28,7 +29,8 @@ public class RestaurantService : IRestaurantService
             Location = dto.Location,
             Description = dto.Description,
             Phone = dto.Phone,
-            CreatedAt = DateTime.UtcNow.AddHours(4)
+            CreatedAt = DateTime.UtcNow.AddHours(4),
+            CategoryID = dto.CategoryId,
         };
         await _repository.AddAsync(restaurant);
         await _repository.SaveAsync();

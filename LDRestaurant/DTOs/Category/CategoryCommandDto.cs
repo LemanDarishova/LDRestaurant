@@ -1,6 +1,6 @@
 ﻿namespace LDRestaurant.DTOs.MealCategory
 {
-    public record MealCategoryCommandDto
+    public record CategoryCommandDto
     {
         public string Name { get; set; }
     }
