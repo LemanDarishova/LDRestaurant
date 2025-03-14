@@ -1,4 +1,5 @@
 ﻿using LDRestaurant.Models.BaseModels;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace LDRestaurant.Models
 {
@@ -10,6 +11,11 @@ namespace LDRestaurant.Models
         public string Phone { get; set; }
 
         //Relations
+
+        [ForeignKey(nameof(RestoranCategory))]
+        public Guid CategoryID { get; set; }
+        public RestaurantCategory RestoranCategory { get; set; }
         public ICollection<Meal> Meals { get; set; } = new List<Meal>();// one-to-many elaqe., null olma sertinde kod partlamasin
+        
     }
 }
