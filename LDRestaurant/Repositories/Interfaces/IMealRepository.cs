@@ -2,6 +2,6 @@
 
 namespace LDRestaurant.Repositories.Interfaces;
 
-public interface IMealRepository : IGenericRepository<Meal>
+public interface IMealRepository : IRepository<Meal>
 {
 }

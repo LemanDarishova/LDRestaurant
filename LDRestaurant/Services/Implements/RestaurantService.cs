@@ -1,8 +1,8 @@
 ﻿using LDRestaurant.DTOs.Restaurant;
 using LDRestaurant.Exceptions;
 using LDRestaurant.Models;
-using LDRestaurant.Repositories.Implements;
-using LDRestaurant.Repositories.Interfaces;
+using LDRestaurant.Repositories.Implements.Restaurants;
+using LDRestaurant.Repositories.Interfaces.Restaurants;
 using LDRestaurant.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,10 +10,12 @@ namespace LDRestaurant.Services.Implements;
 
 public class RestaurantService : IRestaurantService
 {
-    private readonly IReastaurantRepository _repository; //readonly vs constant
+    private readonly IRestaurantReadRepository _readRepository; //readonly vs constant
+    private readonly IRestaurantWriteRepository _writeRepository;
     public RestaurantService()
     {
-        _repository = new RestaurantRepository(); //polymorphism
+        _readRepository = new RestaurantReadRespoitory(); //polymorphism
+        _writeRepository = new RestaurantWriteRepository();
     }
     public async Task AddAsync(RestaurantCommandDto dto)
     {
@@ -32,22 +34,22 @@ public class RestaurantService : IRestaurantService
             CreatedAt = DateTime.UtcNow.AddHours(4),
             CategoryID = dto.CategoryId,
         };
-        await _repository.AddAsync(restaurant);
-        await _repository.SaveAsync();
+        await _writeRepository.AddAsync(restaurant);
+        await _writeRepository.SaveAsync();
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var restaurant = await _repository.GetSingleAsync(r => r.Id == id && !r.isDeleted, true);
+        var restaurant = await _readRepository.GetSingleAsync(r => r.Id == id && !r.isDeleted, true);
         if (restaurant == null) throw new NotFoundException("restaurant");
-        _repository.Delete(restaurant);
-        await _repository.SaveAsync();
+        _writeRepository.Delete(restaurant);
+        await _writeRepository.SaveAsync();
     }
 
 
     public async Task<List<RestaurantGetAllDto>> GetAllAsync()
     {
-        var restaurants = _repository.GetAllWhere(r => !r.isDeleted, false);
+        var restaurants = _readRepository.GetAllWhere(r => !r.isDeleted, false);
         var dtos = new List<RestaurantGetAllDto>();
         dtos = await restaurants.Select(restaurant => new RestaurantGetAllDto
         {
@@ -60,7 +62,7 @@ public class RestaurantService : IRestaurantService
 
     public async Task<RestaurantGetSingleDto> GetSingleAsync(Guid id)
     {
-        var restaurant = await _repository.GetSingleAsync(r => r.Id == id && !r.isDeleted, false);
+        var restaurant = await _readRepository.GetSingleAsync(r => r.Id == id && !r.isDeleted, false);
         if (restaurant == null) throw new NotFoundException("restaurant");
         var dto = new RestaurantGetSingleDto
         {
@@ -75,23 +77,23 @@ public class RestaurantService : IRestaurantService
 
     public async Task RecoverAsync(Guid id)
     {
-        var restaurant = await _repository.GetSingleAsync(r => r.Id == id && r.isDeleted, true);
+        var restaurant = await _readRepository.GetSingleAsync(r => r.Id == id && r.isDeleted, true);
         if (restaurant == null) throw new NotFoundException("restaurant");
-        _repository.Recover(restaurant);
-        await _repository.SaveAsync();
+        _writeRepository.Recover(restaurant);
+        await _writeRepository.SaveAsync();
     }
 
     public async Task RemoveAsync(Guid id)
     {
-        var restaurant = await _repository.GetSingleAsync(r => r.Id == id && !r.isDeleted, true);
+        var restaurant = await _readRepository.GetSingleAsync(r => r.Id == id && !r.isDeleted, true);
         if (restaurant == null) throw new NotFoundException("restaurant");
-        _repository.Remove(restaurant);
-        await _repository.SaveAsync();
+        _writeRepository.Remove(restaurant);
+        await _writeRepository.SaveAsync();
     }
 
     public async Task UpdateAsync(Guid id, RestaurantCommandDto dto)
     {
-        var restaurant = await _repository.GetSingleAsync(r => r.Id == id && !r.isDeleted, true);
+        var restaurant = await _readRepository.GetSingleAsync(r => r.Id == id && !r.isDeleted, true);
         if (restaurant == null) throw new NotFoundException("restaurant");
 
         restaurant.Name = dto.Name;
@@ -100,7 +102,7 @@ public class RestaurantService : IRestaurantService
         restaurant.Phone = dto.Phone;
         restaurant.UpdatedAt = DateTime.UtcNow.AddHours(4);
 
-        _repository.Update(restaurant);
-        await _repository.SaveAsync();
+        _writeRepository.Update(restaurant);
+        await _writeRepository.SaveAsync();
     }
 }
