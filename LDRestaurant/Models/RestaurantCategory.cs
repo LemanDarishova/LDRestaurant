@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace LDRestaurant.Models;
 
-public class MealCategory:BaseCategory{
-    //Relations
-    public ICollection<Meal> Meals { get; set; } = new List<Meal>();
+public class RestaurantCategory : BaseCategory
+{
+   public ICollection<Restaurant> Restaurants { get; set; } = new List<Restaurant>();
 
 }

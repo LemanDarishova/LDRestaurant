@@ -65,7 +65,8 @@ public class MealCategoryService : IMealCategoryService
 
     public async Task RecoverAsync(Guid id)
     {
-        var mealCategory = _mealCategoryRepository.GetSingleAsync(m => m.Id == id && m.isDeleted, true)/await;
+        var mealCategory = await _mealCategoryRepository.GetSingleAsync(m => m.Id == id && m.isDeleted, true);
+
         if (mealCategory == null) throw new NotFoundException("Category");
         _mealCategoryRepository.Recover(mealCategory);
         await _mealCategoryRepository.SaveAsync();
