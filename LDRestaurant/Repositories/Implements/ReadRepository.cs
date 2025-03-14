@@ -6,29 +6,19 @@ using System.Linq.Expressions;
 
 namespace LDRestaurant.Repositories.Implements
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
+    public class ReadRepository<T>:IReadRepository<T> where T : BaseEntity
     {
         LDRestaurantDbContext _dbContext; //LDRestaurant burada tipdir
-        DbSet<T> _dbSet;
-        public GenericRepository()
+        public ReadRepository()
         {
             _dbContext = new LDRestaurantDbContext(); //insance
-            _dbSet = _dbContext.Set<T>();
         }
 
-        public async Task AddAsync(T entity)
-        {
-            await _dbSet.AddAsync(entity);
-        }
-
-        public void Delete(T entity)
-        {
-            entity.isDeleted = true;
-        }
+        public DbSet<T> Table => _dbContext.Set<T>();
 
         public IQueryable<T> GetAllWhere(Expression<Func<T, bool>> expression, bool isTracking, params string[] includes)
         {
-            var query = _dbSet.Where(expression);
+            var query = Table.Where(expression);
             if (isTracking == false)
             {
                 query = query.AsNoTracking();
@@ -45,7 +35,7 @@ namespace LDRestaurant.Repositories.Implements
 
         public async Task<T> GetSingleAsync(Expression<Func<T, bool>> expression, bool isTracking, params string[] includes)
         {
-            var query = _dbSet.AsQueryable();
+            var query = Table.AsQueryable();
             if (isTracking == false)
             {
                 query = query.AsNoTracking();
@@ -59,31 +49,6 @@ namespace LDRestaurant.Repositories.Implements
             }
             T? entity = await query.FirstOrDefaultAsync(expression);
             return entity;
-        }
-
-        public void Recover(T entity)
-        {
-            entity.isDeleted = false;
-        }
-
-        public void Remove(T entity)
-        {
-            _dbSet.Remove(entity);
-        }
-
-        public int Save()
-        {
-            return _dbContext.SaveChanges();
-        }
-
-        public async Task<int> SaveAsync()
-        {
-            return await _dbContext.SaveChangesAsync();
-        }
-
-        public void Update(T entity)
-        {
-            _dbSet.Update(entity);
         }
     }
 }
