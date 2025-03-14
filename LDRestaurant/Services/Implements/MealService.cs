@@ -3,41 +3,27 @@ using LDRestaurant.Exceptions;
 using LDRestaurant.Models;
 using LDRestaurant.Repositories.Implements;
 using LDRestaurant.Repositories.Interfaces;
+using LDRestaurant.Services.Implements.Helper;
 using LDRestaurant.Services.Interfaces;
+using LDRestaurant.Services.Interfaces.Helper;
 
 namespace LDRestaurant.Services.Implements;
 
 public class MealService : IMealService
 {
     private readonly IMealRepository _mealRepository;
-    private readonly IReastaurantRepository _restaurantRepository;
-    private readonly IMealCategoryRepository _categoryRepository;
+    private readonly IGetModelService _getEntity;
 
     public MealService()
     {
         _mealRepository = new MealRepository();
-        _restaurantRepository = new RestaurantRepository();
-        _categoryRepository = new MealCategoryRepository();
-    }
-
-    private async Task<MealCategory> GetCategoryAsync(Guid categoryId)
-    {
-        var category = await _categoryRepository.GetSingleAsync(c => c.Id == categoryId && !c.isDeleted, false);
-        if (category == null) throw new NotFoundException("category");
-        return category;
-    }
-
-    private async Task<Restaurant> GetRestaurantAsync(Guid restaurantId)
-    {
-        var restaurant = await _restaurantRepository.GetSingleAsync(r => r.Id == restaurantId && !r.isDeleted, false);
-        if (restaurant == null) throw new NotFoundException("restaurant");
-        return restaurant;
+        _getEntity = new GetModelService();
     }
 
     public async Task AddAsync(MealCommandDto addDto)
     {
-        var category = await GetCategoryAsync(addDto.CategoryID);
-        var restaurant = await GetRestaurantAsync(addDto.RestaurantID);
+        var category = await _getEntity.GetMealCategoryAsyn(addDto.CategoryID);
+        var restaurant = await _getEntity.GetRestaurantAsync(addDto.RestaurantID);
         var meal = new Meal
         {
             Id = Guid.NewGuid(),
