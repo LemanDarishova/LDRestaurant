@@ -1,45 +1,53 @@
-﻿using LDRestaurant.DTOs.MealCategory;
+﻿using LDRestaurant.DTOs.Category;
+using LDRestaurant.DTOs.Meal;
 using LDRestaurant.Exceptions;
 using LDRestaurant.Models;
 using LDRestaurant.Repositories.Implements;
+using LDRestaurant.Repositories.Implements.MealCategories;
+using LDRestaurant.Repositories.Interfaces;
+using LDRestaurant.Repositories.Interfaces.MealCategories;
 using LDRestaurant.Services.Interfaces;
 
 namespace LDRestaurant.Services.Implements;
 
-public class MealCategoryService : IMealCategoryService
+public class MealCategoryService : ICategoryService
 {
-    private readonly MealCategoryRepository _mealCategoryRepository;
+    private readonly  IMealCategoryReadRepository _readRepository;
+    private readonly IMealCategoryWriteRepository _writeRepository;
 
     public MealCategoryService()
     {
-        _mealCategoryRepository = new MealCategoryRepository();
+        _readRepository = new MealCategoryReadRepository();
+        _writeRepository = new MealCategoryWriteRepository();
     }
 
-    public async Task AddAsync(MealCategoryCommandDto addDto)
+    public async Task AddAsync(CategoryCommandDto addDto)
     {
         var mealCategory = new MealCategory
         {
             Name = addDto.Name,
             CreatedAt = DateTime.UtcNow.AddHours(4)
         };
-        await _mealCategoryRepository.AddAsync(mealCategory);
-        await _mealCategoryRepository.SaveAsync();
+        await _writeRepository.AddAsync(mealCategory);
+        await _writeRepository.SaveAsync();
     }
+
+
 
     public async Task DeleteAsync(Guid id)
     {
-        var mealCategory = await _mealCategoryRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
+        var mealCategory = await _readRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
         if (mealCategory == null) throw new NotFoundException("Category");
-        _mealCategoryRepository.Delete(mealCategory);
-        await _mealCategoryRepository.SaveAsync();
+        _writeRepository.Delete(mealCategory);
+        await _writeRepository.SaveAsync();
 
     }
 
-    public async Task<List<MealCategoryGetDto>> GetAllAsync()
+    public async Task<List<CategoryGetDto>> GetAllAsync()
     {
-        var mealCategories = _mealCategoryRepository.GetAllWhere(m => !m.isDeleted, false);
-        var dtos = new List<MealCategoryGetDto>();
-        dtos = mealCategories.Select(mealCategories => new MealCategoryGetDto    //bir daha nezerden kecir
+        var mealCategories = _readRepository.GetAllWhere(m => !m.isDeleted, false);
+        var dtos = new List<CategoryGetDto>();
+        dtos = mealCategories.Select(mealCategories => new CategoryGetDto    //bir daha nezerden kecir
         {
             Id = mealCategories.Id.ToString(),
             Name = mealCategories.Name
@@ -50,11 +58,11 @@ public class MealCategoryService : IMealCategoryService
     }
 
 
-    public async Task<MealCategoryGetDto> GetSingleAsync(Guid id)
+    public async Task<CategoryGetDto> GetSingleAsync(Guid id)
     {
-        var mealCategory = await _mealCategoryRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, false);
+        var mealCategory = await _readRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, false);
         if (mealCategory == null) throw new NotFoundException("Category");
-        var dto = new MealCategoryGetDto
+        var dto = new CategoryGetDto
         {
             Id = mealCategory.Id.ToString(),
             Name = mealCategory.Name
@@ -65,33 +73,33 @@ public class MealCategoryService : IMealCategoryService
 
     public async Task RecoverAsync(Guid id)
     {
-        var mealCategory = await _mealCategoryRepository.GetSingleAsync(m => m.Id == id && m.isDeleted, true);
+        var mealCategory = await _readRepository.GetSingleAsync(m => m.Id == id && m.isDeleted, true);
 
         if (mealCategory == null) throw new NotFoundException("Category");
-        _mealCategoryRepository.Recover(mealCategory);
-        await _mealCategoryRepository.SaveAsync();
+        _writeRepository.Recover(mealCategory);
+        await _writeRepository.SaveAsync();
     }
 
     public async Task RemoveAsync(Guid id)
     {
-        var mealCategory = await _mealCategoryRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
+        var mealCategory = await _readRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
         if (mealCategory == null) throw new NotFoundException("Category");
-        _mealCategoryRepository.Remove(mealCategory);
-        await _mealCategoryRepository.SaveAsync();
+        _writeRepository.Remove(mealCategory);
+        await _writeRepository.SaveAsync();
     }
 
-    public async Task UpdateAsync(Guid id, MealCategoryCommandDto dto)
+    public async Task UpdateAsync(Guid id, CategoryCommandDto dto)
     {
-        var mealCategory = await _mealCategoryRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
+        var mealCategory = await _readRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
         if (mealCategory == null) throw new NotFoundException("Category");
 
         mealCategory.Name = dto.Name;
         mealCategory.UpdatedAt = DateTime.UtcNow.AddHours(4);
 
-        _mealCategoryRepository.Update(mealCategory);
-        await _mealCategoryRepository.SaveAsync();
-
-
+        _writeRepository.Update(mealCategory);
+        await _writeRepository.SaveAsync();
 
     }
+
+    
 }

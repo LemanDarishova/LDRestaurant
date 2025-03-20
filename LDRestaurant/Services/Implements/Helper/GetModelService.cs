@@ -2,41 +2,49 @@
 using LDRestaurant.Migrations;
 using LDRestaurant.Models;
 using LDRestaurant.Repositories.Implements;
+using LDRestaurant.Repositories.Implements.MealCategories;
+using LDRestaurant.Repositories.Implements.RestaurantCategories;
+using LDRestaurant.Repositories.Implements.Restaurants;
 using LDRestaurant.Repositories.Interfaces;
+using LDRestaurant.Repositories.Interfaces.MealCategories;
+using LDRestaurant.Repositories.Interfaces.RestaurantCategories;
+using LDRestaurant.Repositories.Interfaces.Restaurants;
 using LDRestaurant.Services.Interfaces.Helper;
 using System.Net.Http.Headers;
 
 namespace LDRestaurant.Services.Implements.Helper
 {
+
     public class GetModelService : IGetModelService
     {
-        private readonly IReastaurantRepository _restaurantRepository;
-        private readonly IMealCategoryRepository _mealCategoryRepository;
-        private readonly IRestaurantCategoryRepository _restaurantCategoryRepository;
+
+        private readonly IReadRepository<MealCategory> _mealcategoryreadRepository;    //bu nece yazilmalidir?
+        private readonly IReadRepository<RestaurantCategory> _rcategoryreadRepository;
+        private readonly IReadRepository<Restaurant> _restaurantreadRepository;
 
         public GetModelService()
         {
-            _restaurantRepository = new RestaurantRepository();
-            _mealCategoryRepository = new MealCategoryRepository();
-            _restaurantCategoryRepository = new RestaurantCategoryRepository();
+            _mealcategoryreadRepository = new ReadRepository<MealCategory>();
+            _rcategoryreadRepository = new ReadRepository<RestaurantCategory>();
+            _restaurantreadRepository = new ReadRepository<Restaurant>();
         }
         public async Task<MealCategory> GetMealCategoryAsyn(Guid mealCategoryId)
         {
-            var category = await _mealCategoryRepository.GetSingleAsync(c => c.Id == mealCategoryId && !c.isDeleted, false);
+            var category = await _mealcategoryreadRepository.GetSingleAsync(c => c.Id == mealCategoryId && !c.isDeleted, false);
             if (category == null) throw new NotFoundException("category");
             return category;
         }
 
         public async Task<Restaurant> GetRestaurantAsync(Guid restaurantId)
         {
-            var restaurant = await _restaurantRepository.GetSingleAsync(r => r.Id == restaurantId && !r.isDeleted, false);
+            var restaurant = await _restaurantreadRepository.GetSingleAsync(r => r.Id == restaurantId && !r.isDeleted, false);
             if (restaurant == null) throw new NotFoundException("restaurant");
             return restaurant;
         }
 
         public async Task<RestaurantCategory> GetRestaurantCategoryAsync(Guid restaurantCategoryId)
         {
-            var category = await _restaurantCategoryRepository.GetSingleAsync(r => r.Id == restaurantCategoryId && !r.isDeleted, false);
+            var category = await _rcategoryreadRepository.GetSingleAsync(r => r.Id == restaurantCategoryId && !r.isDeleted, false);
             if (category == null) throw new NotFoundException("restaurant category");
             return category;
         }
