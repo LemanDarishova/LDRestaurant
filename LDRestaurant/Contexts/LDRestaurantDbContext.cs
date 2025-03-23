@@ -9,6 +9,9 @@ namespace LDRestaurant.Contexts
         public DbSet<Restaurant> Restaurants { get; set; }
         public DbSet<Meal> Meals { get; set; }
         public DbSet<MealCategory> MealCategories { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
         //protected override void OnModelCreating(ModelBuilder modelBuilder)
         //{
         //    base.OnModelCreating(modelBuilder); //konfiqurasiyalar burada bildirilir.
