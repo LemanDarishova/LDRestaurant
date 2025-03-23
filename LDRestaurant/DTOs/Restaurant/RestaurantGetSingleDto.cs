@@ -7,4 +7,5 @@ public record RestaurantGetSingleDto
     public string Description { get; set; }
     public string Location { get; set; }
     public string Phone { get; set; }
+    public string CategoryName { get; set; }
 }

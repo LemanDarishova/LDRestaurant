@@ -2,7 +2,9 @@
 using LDRestaurant.Exceptions;
 using LDRestaurant.Models;
 using LDRestaurant.Repositories.Implements;
+using LDRestaurant.Repositories.Implements.Meals;
 using LDRestaurant.Repositories.Interfaces;
+using LDRestaurant.Repositories.Interfaces.Meals;
 using LDRestaurant.Services.Implements.Helper;
 using LDRestaurant.Services.Interfaces;
 using LDRestaurant.Services.Interfaces.Helper;
@@ -11,12 +13,14 @@ namespace LDRestaurant.Services.Implements;
 
 public class MealService : IMealService
 {
-    private readonly IMealRepository _mealRepository;
+    private readonly IMealReadRepository _readRepository;
+    private readonly IMealWriteRepository _writeRepository;
     private readonly IGetModelService _getEntity;
 
     public MealService()
     {
-        _mealRepository = new MealRepository();
+        _writeRepository = new MealWriteRepository();
+        _readRepository = new MealReadRepository();
         _getEntity = new GetModelService();
     }
 
@@ -38,21 +42,21 @@ public class MealService : IMealService
             isDeleted = false
         };
 
-        await _mealRepository.AddAsync(meal);
-        await _mealRepository.SaveAsync();
+        await _writeRepository.AddAsync(meal);
+        await _writeRepository.SaveAsync();
     }
 
     public async Task RemoveAsync(Guid id)
     {
-        var meal = await _mealRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
+        var meal = await _readRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
         if (meal == null) throw new NotFoundException("meal");
-        _mealRepository.Remove(meal);
-        await _mealRepository.SaveAsync();
+        _writeRepository.Remove(meal);
+        await _writeRepository.SaveAsync();
     }
 
     public async Task UpdateAsync(Guid id, MealCommandDto updateDto)
     {
-        var meal = await _mealRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
+        var meal = await _readRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
         if (meal == null) throw new NotFoundException("meal");
 
         meal.Name = updateDto.Name;
@@ -62,31 +66,31 @@ public class MealService : IMealService
         meal.CategoryID = updateDto.CategoryID;
         meal.UpdatedAt = DateTime.UtcNow.AddHours(4);
 
-        _mealRepository.Update(meal);
-        await _mealRepository.SaveAsync();
+        _writeRepository.Update(meal);
+        await _writeRepository.SaveAsync();
 
 
     }
 
     public async Task DeleteAsync(Guid id)
     {
-        var meal = await _mealRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
+        var meal = await _readRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, true);
         if (meal == null) throw new NotFoundException("meal");
-        _mealRepository.Delete(meal);
-        await _mealRepository.SaveAsync();
+        _writeRepository.Delete(meal);
+        await _writeRepository.SaveAsync();
     }
 
     public async Task RecoverAsync(Guid id)
     {
-        var meal = await _mealRepository.GetSingleAsync(m => m.Id == id && m.isDeleted, true);
+        var meal = await _readRepository.GetSingleAsync(m => m.Id == id && m.isDeleted, true);
         if (meal == null) throw new NotFoundException("meal");
-        _mealRepository.Recover(meal);
-        await _mealRepository.SaveAsync();
+        _writeRepository.Recover(meal);
+        await _writeRepository.SaveAsync();
     }
 
     public async Task<MealGetSingleDto> GetSingleAsync(Guid id)
     {
-        var meal = await _mealRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, false, "Restaurant", "MealCategory");
+        var meal = await _readRepository.GetSingleAsync(m => m.Id == id && !m.isDeleted, false, "Restaurant", "MealCategory");
         if (meal == null) throw new NotFoundException("meal");
         var dto = new MealGetSingleDto
         {
@@ -106,7 +110,7 @@ public class MealService : IMealService
 
     public async Task<List<MealGetAllDto>> GetAllAsync()
     {
-        var meals = _mealRepository.GetAllWhere(m => !m.isDeleted, false);
+        var meals = _readRepository.GetAllWhere(m => !m.isDeleted, false);
         var dtos = meals.Select(meals => new MealGetAllDto
         {
             Id = meals.Id.ToString(),

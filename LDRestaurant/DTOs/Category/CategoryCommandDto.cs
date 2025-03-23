@@ -1,4 +1,4 @@
-﻿namespace LDRestaurant.DTOs.MealCategory
+﻿namespace LDRestaurant.DTOs.Category
 {
     public record CategoryCommandDto
     {

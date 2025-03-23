@@ -1,7 +1,7 @@
-﻿using LDRestaurant.DTOs.MealCategory;
+﻿using LDRestaurant.DTOs.Category;
 
 namespace LDRestaurant.Services.Interfaces;
 
-public interface IMealCategoryService : IGenericService<MealCategoryCommandDto, MealCategoryCommandDto, MealCategoryGetDto, MealCategoryGetDto>
+public interface ICategoryService : IGenericService<CategoryCommandDto, CategoryCommandDto, CategoryGetDto, CategoryGetDto>
 {
 }

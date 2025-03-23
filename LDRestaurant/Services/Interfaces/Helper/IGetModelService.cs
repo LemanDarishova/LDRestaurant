@@ -6,5 +6,6 @@ namespace LDRestaurant.Services.Interfaces.Helper
     {
         Task<MealCategory> GetMealCategoryAsyn(Guid mealCategoryId);
         Task<Restaurant> GetRestaurantAsync(Guid restaurantId);
+        Task<RestaurantCategory> GetRestaurantCategoryAsync(Guid restaurantCategoryId);
     }
 }
