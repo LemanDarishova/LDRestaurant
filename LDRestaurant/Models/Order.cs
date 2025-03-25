@@ -8,5 +8,7 @@ namespace LDRestaurant.Models
         public Guid CustomerID { get; set; }
         public Customer Customer { get; set; }
         public double TotalPrice { get; set; }
+
+        public ICollection<OrderDetail> Details { get; set; } = new List<OrderDetail>();
     }
 }

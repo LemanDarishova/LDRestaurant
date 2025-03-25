@@ -8,7 +8,7 @@ namespace LDRestaurant.Models
         public Order Order { get; set; }
         public Guid MealID { get; set; }
         public Meal Meal { get; set; }
-        public double Unit { get; set; }
-        public double Price { get; set; }
+        public double Unit { get; set; } //porsiya
+        public double Price { get; set; } //porsiyaya uygun qiymet
     }
 }

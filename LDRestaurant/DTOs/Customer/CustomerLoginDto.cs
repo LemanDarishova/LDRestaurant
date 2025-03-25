@@ -8,7 +8,6 @@ namespace LDRestaurant.DTOs.Customer
 {
     public class CustomerLoginDto
     {
-        public string Id{ get; set; }
         public string Email{ get; set; }
         public string Password{ get; set; }
 
