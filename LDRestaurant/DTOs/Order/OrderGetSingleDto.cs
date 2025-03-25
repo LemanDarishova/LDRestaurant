@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace LDRestaurant.DTOs.Order
+﻿namespace LDRestaurant.DTOs.Order
 {
-    internal class OrderGetSingleDto
+    public class OrderGetSingleDto
     {
+        public string Id { get; set; }
+        public string OrderTrackingNumber { get; set; }
+        public string CustomerName { get; set; }
+        public double TotalPrice { get; set; }
+        public double TotalCounts { get; set; }
+        public ICollection<OrderDetailGetDto> DetailGetDtos { get; set; } = new List<OrderDetailGetDto>();
     }
 }

@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LDRestaurant.DTOs.Order;
 
 namespace LDRestaurant.Services.Interfaces
 {
-    internal class IOrderService
+    public interface IOrderService:IGenericService<OrderCreateDto, OrderUpdateDto, OrderGetAllDto, OrderGetSingleDto>
     {
     }
 }
