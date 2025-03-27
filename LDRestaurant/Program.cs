@@ -1,6 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using LDRestaurant.Contexts;
-using LDRestaurant.DTOs.Order;
 using LDRestaurant.Services.Implements;
 using LDRestaurant.Services.Interfaces;
 
@@ -112,33 +111,43 @@ LDRestaurantDbContext context = new LDRestaurantDbContext();
 #endregion
 
 #region Order
-var mealId1 = "B7168A1A-D875-4F8A-8676-C246E0BBF90A";
-var detailDto1 = new OrderDetailCreateDto
-{
-    MealID = Guid.Parse(mealId1),
-    Unit = 2
-};
-var mealId2 = "E34FC407-0FC2-4946-9A7D-E80442CA2ABB";
-var detailDto2 = new OrderDetailCreateDto
-{
-    MealID = Guid.Parse(mealId2),
-    Unit = 3
-};
-var details = new List<OrderDetailCreateDto>()
-{
-    detailDto1,
-    detailDto2
-};
-//details.Add(detailDto1);
-//details.Append(detailDto2);
-var customerId = "7D1584C4-22D9-4F97-ACB0-842D326CF191";
-var orderDto = new OrderCreateDto
-{
-    CustomerID = Guid.Parse(customerId),
-    DetailsDtos = details
-};
+//var mealId1 = "B7168A1A-D875-4F8A-8676-C246E0BBF90A";
+//var detailDto1 = new OrderDetailCreateDto
+//{
+//    MealID = Guid.Parse(mealId1),
+//    Unit = 2
+//};
+//var mealId2 = "E34FC407-0FC2-4946-9A7D-E80442CA2ABB";
+//var detailDto2 = new OrderDetailCreateDto
+//{
+//    MealID = Guid.Parse(mealId2),
+//    Unit = 3
+//};
+//var details = new List<OrderDetailCreateDto>()
+//{
+//    detailDto1,
+//    detailDto2
+//};
+//var customerId = "7D1584C4-22D9-4F97-ACB0-842D326CF191";
+//var orderDto = new OrderCreateDto
+//{
+//    CustomerID = Guid.Parse(customerId),
+//    DetailsDtos = details
+//};
 IOrderService _orderService = new OrderService();
-await _orderService.AddAsync(orderDto);
-Console.WriteLine("Order was created");
-
+//await _orderService.AddAsync(orderDto);
+var orderId = "D070C62D-0BC4-41A7-8174-50A187B582C1";
+//await _orderService.RemoveAsync(Guid.Parse(orderId));
+//Console.WriteLine("Order was created");
+//var customerID = "7D1584C4-22D9-4F97-ACB0-842D326CF191";
+var dto = await _orderService.GetSingleAsync(Guid.Parse(orderId));
+//foreach (var dto in dtos)
+//{
+//    Console.WriteLine($"ID:{dto.Id}\nOrderTrackingNumber:{dto.OrderTrackingNumber}\nCustomer:{dto.CustomerName}\nTotal: {dto.TotalPrice} AZN\n{dto.TotalCounts} pors\n");
+//}
+Console.WriteLine($"\nRestaurant:{dto.RestaurantName}\nID:{dto.Id}\nOrderTrackingNumber:{dto.OrderTrackingNumber}\nCustomer:{dto.CustomerName}\nTotal: {dto.TotalPrice} AZN\n{dto.TotalCounts} pors\n");
+foreach (var detail in dto.DetailGetDtos)
+{
+    Console.WriteLine($"[ID: {detail.Id}\nMeal: {detail.MealName}  {detail.Unit}  {detail.Price} AZN]\n");
+}
 #endregion

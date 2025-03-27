@@ -1,20 +1,31 @@
 ﻿using LDRestaurant.DTOs.Order;
 using LDRestaurant.Exceptions;
 using LDRestaurant.Models;
+using LDRestaurant.Repositories.Implements.OrderDetails;
+using LDRestaurant.Repositories.Implements.Orders;
 using LDRestaurant.Repositories.Interfaces.OrderDetails;
 using LDRestaurant.Repositories.Interfaces.Orders;
+using LDRestaurant.Services.Implements.Helper;
 using LDRestaurant.Services.Interfaces;
 using LDRestaurant.Services.Interfaces.Helper;
+using Microsoft.EntityFrameworkCore;
 
 namespace LDRestaurant.Services.Implements
 {
     public class OrderService : IOrderService
     {
-        private readonly IOrderWriteRepository _writeRepository;
+        private readonly IOrderWriteRepository _orderWriteRepository;
         private readonly IOrderDetailWriteRepository _detailWriteRepository;
         private readonly IOrderReadRepository _orderReadRepository;
         private readonly IGetModelService _getEntity;
 
+        public OrderService()
+        {
+            _orderWriteRepository = new OrderWriteRepository();
+            _detailWriteRepository = new OrderDetailWriteRepository();
+            _orderReadRepository = new OrderReadRepository();
+            _getEntity = new GetModelService();
+        }
         private string GenerateTrackingNumber()
         {
             var date = DateTime.Now.AddHours(4);
@@ -42,13 +53,14 @@ namespace LDRestaurant.Services.Implements
                     Price = (meal.Price * detailDto.Unit),
                     OrderID = order.Id
                 };
+                order.Details.Add(detail);
                 await _detailWriteRepository.AddAsync(detail);
             }
 
-            order.TotalPrice = order.Details.Sum(od => od.Price);
+            order.TotalPrice += order.Details.Sum(od => od.Price);
 
-            await _writeRepository.AddAsync(order);
-            await _writeRepository.SaveAsync();
+            await _orderWriteRepository.AddAsync(order);
+            await _orderWriteRepository.SaveAsync();
             await _detailWriteRepository.SaveAsync();
         }
 
@@ -57,27 +69,56 @@ namespace LDRestaurant.Services.Implements
             var order = await _orderReadRepository.GetSingleAsync(o => o.Id == id && !o.isDeleted, true, "Details");
             if (order == null) throw new NotFoundException("order");
 
-            if(order.Details.Count()>0)
+            if (order.Details.Count() > 0)
             {
-                foreach(var detail in order.Details)
+                foreach (var detail in order.Details)
                 {
                     _detailWriteRepository.Delete(detail);
                 }
 
             }
-            _writeRepository.Delete(order);
+            _orderWriteRepository.Delete(order);
             await _detailWriteRepository.SaveAsync();
-            await _writeRepository.SaveAsync();
+            await _orderWriteRepository.SaveAsync();
         }
 
-        public Task<List<OrderGetAllDto>> GetAllAsync()
+        public async Task<List<OrderGetAllDto>> GetAllAsync(Guid customerId)
         {
-            throw new NotImplementedException();
+            var customer = await _getEntity.GetCustomerAsync(customerId);
+            var query = _orderReadRepository.GetAllWhere(o => o.CustomerID == customer.Id, false, "Details", "Customer");
+            var dtos = new List<OrderGetAllDto>();
+            dtos = await query.Select(order => new OrderGetAllDto
+            {
+                Id = order.Id.ToString(),
+                OrderTrackingNumber = order.TrackingID,
+                TotalPrice = order.TotalPrice,
+                CustomerName = order.Customer.FullName,
+                TotalCounts = order.Details.Sum(d => d.Unit)
+            }).ToListAsync();
+            return dtos;
         }
 
-        public Task<OrderGetSingleDto> GetSingleAsync(Guid id)
+        public async Task<OrderGetSingleDto> GetSingleAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var order = await _orderReadRepository.GetSingleAsync(o => o.Id == id, false, "Details.Meal.Restaurant", "Customer");
+            if (order == null) throw new NotFoundException("order");
+            var dto = new OrderGetSingleDto()
+            {
+                Id = order.Id.ToString(),
+                OrderTrackingNumber = order.TrackingID,
+                TotalPrice = order.TotalPrice,
+                CustomerName = order.Customer.FullName,
+                TotalCounts = order.Details.Sum(d => d.Unit),
+                RestaurantName = order.Details.FirstOrDefault().Meal.Restaurant.Name,
+                DetailGetDtos = order.Details.Select(detail => new OrderDetailGetDto
+                {
+                    Id = detail.Id.ToString(),
+                    MealName = detail.Meal.Name,
+                    Price = detail.Price,
+                    Unit = detail.Unit
+                }).ToList()
+            };
+            return dto;
         }
 
         public async Task RecoverAsync(Guid id)
@@ -93,9 +134,9 @@ namespace LDRestaurant.Services.Implements
                 }
 
             }
-            _writeRepository.Recover(order);
+            _orderWriteRepository.Recover(order);
             await _detailWriteRepository.SaveAsync();
-            await _writeRepository.SaveAsync();
+            await _orderWriteRepository.SaveAsync();
         }
 
         public async Task RemoveAsync(Guid id)
@@ -111,14 +152,10 @@ namespace LDRestaurant.Services.Implements
                 }
 
             }
-            _writeRepository.Remove(order);
+            _orderWriteRepository.Remove(order);
             await _detailWriteRepository.SaveAsync();
-            await _writeRepository.SaveAsync();
+            await _orderWriteRepository.SaveAsync();
         }
 
-        public Task UpdateAsync(Guid id, OrderUpdateDto dto)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

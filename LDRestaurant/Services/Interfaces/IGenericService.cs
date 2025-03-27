@@ -5,10 +5,10 @@
         //command
         public Task AddAsync(TCommandDto addDto);
         public Task RemoveAsync(Guid id);
-        public Task UpdateAsync(Guid id, TUpdateDto dto);
         public Task DeleteAsync(Guid id);
         public Task RecoverAsync(Guid id);
 
+        public Task UpdateAsync(Guid id, TUpdateDto dto);
         //get
         public Task<TGetSingleDto> GetSingleAsync(Guid id);
         public Task<List<TGetAllDto>> GetAllAsync();
