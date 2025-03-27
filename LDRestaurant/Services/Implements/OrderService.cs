@@ -1,4 +1,5 @@
 ﻿using LDRestaurant.DTOs.Order;
+using LDRestaurant.Exceptions;
 using LDRestaurant.Models;
 using LDRestaurant.Repositories.Interfaces.OrderDetails;
 using LDRestaurant.Repositories.Interfaces.Orders;
@@ -9,9 +10,10 @@ namespace LDRestaurant.Services.Implements
 {
     public class OrderService : IOrderService
     {
-        private IOrderWriteRepository _writeRepository;
-        private IOrderDetailWriteRepository _detailWriteRepository;
-        private IGetModelService _getEntity;
+        private readonly IOrderWriteRepository _writeRepository;
+        private readonly IOrderDetailWriteRepository _detailWriteRepository;
+        private readonly IOrderReadRepository _orderReadRepository;
+        private readonly IGetModelService _getEntity;
 
         private string GenerateTrackingNumber()
         {
@@ -50,9 +52,22 @@ namespace LDRestaurant.Services.Implements
             await _detailWriteRepository.SaveAsync();
         }
 
-        public Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var order = await _orderReadRepository.GetSingleAsync(o => o.Id == id && !o.isDeleted, true, "Details");
+            if (order == null) throw new NotFoundException("order");
+
+            if(order.Details.Count()>0)
+            {
+                foreach(var detail in order.Details)
+                {
+                    _detailWriteRepository.Delete(detail);
+                }
+
+            }
+            _writeRepository.Delete(order);
+            await _detailWriteRepository.SaveAsync();
+            await _writeRepository.SaveAsync();
         }
 
         public Task<List<OrderGetAllDto>> GetAllAsync()
@@ -65,14 +80,40 @@ namespace LDRestaurant.Services.Implements
             throw new NotImplementedException();
         }
 
-        public Task RecoverAsync(Guid id)
+        public async Task RecoverAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var order = await _orderReadRepository.GetSingleAsync(o => o.Id == id && o.isDeleted, true, "Details");
+            if (order == null) throw new NotFoundException("order");
+
+            if (order.Details.Count() > 0)
+            {
+                foreach (var detail in order.Details)
+                {
+                    _detailWriteRepository.Recover(detail);
+                }
+
+            }
+            _writeRepository.Recover(order);
+            await _detailWriteRepository.SaveAsync();
+            await _writeRepository.SaveAsync();
         }
 
-        public Task RemoveAsync(Guid id)
+        public async Task RemoveAsync(Guid id)
         {
-            throw new NotImplementedException();
+            var order = await _orderReadRepository.GetSingleAsync(o => o.Id == id, true, "Details");
+            if (order == null) throw new NotFoundException("order");
+
+            if (order.Details.Count() > 0)
+            {
+                foreach (var detail in order.Details)
+                {
+                    _detailWriteRepository.Remove(detail);
+                }
+
+            }
+            _writeRepository.Remove(order);
+            await _detailWriteRepository.SaveAsync();
+            await _writeRepository.SaveAsync();
         }
 
         public Task UpdateAsync(Guid id, OrderUpdateDto dto)
